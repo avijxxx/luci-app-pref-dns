@@ -1,0 +1,13 @@
+{
+	"admin/services/pref_dns": {
+		"title": "优选DNS",
+		"order": 89,
+		"action": {
+			"type": "view",
+			"path": "pref_dns/basic"
+		},
+		"depends": {
+			"acl": [ "luci-app-pref-dns" ]
+		}
+	}
+}

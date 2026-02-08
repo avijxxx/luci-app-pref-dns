@@ -1,0 +1,8 @@
+config pref_dns 'config'
+	option mosdns_enabled '1'
+	option domain ''
+	option dns_server '119.29.29.29'
+	option last_resolve_time ''
+	option cron_enabled '0'
+	option cron_expression ''
+	option passwall_enabled '1'

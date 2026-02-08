@@ -1,0 +1,236 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Not Installed"
+msgstr "未安装"
+
+msgid "RUNNING"
+msgstr "运行中"
+
+msgid "NOT RUNNING"
+msgstr "未运行"
+
+msgid "Please enter a domain name"
+msgstr "请输入域名"
+
+msgid "Please select a DNS server"
+msgstr "请选择 DNS 服务器"
+
+msgid "Failed to parse result"
+msgstr "解析结果失败"
+
+msgid "Resolved %d IP(s): "
+msgstr "已解析 %d 个 IP: "
+
+msgid "MosDNS restarted"
+msgstr "MosDNS 已重启"
+
+msgid "Saved (MosDNS not running)"
+msgstr "已保存（MosDNS 未运行）"
+
+msgid "Saved (MosDNS not installed)"
+msgstr "已保存（MosDNS 未安装）"
+
+msgid "DNS query timed out"
+msgstr "DNS 查询超时"
+
+msgid "No IP address found in DNS response"
+msgstr "DNS 响应中未找到 IP 地址"
+
+msgid "Resolve failed: "
+msgstr "解析失败: "
+
+msgid "Execution error: "
+msgstr "执行错误: "
+
+msgid "Configuration saved"
+msgstr "配置已保存"
+
+msgid "MosDNS: saved and restarted"
+msgstr "MosDNS: 已保存并重启"
+
+msgid "MosDNS: saved (not running, skip restart)"
+msgstr "MosDNS: 已保存（未运行，跳过重启）"
+
+msgid "MosDNS: saved (not installed)"
+msgstr "MosDNS: 已保存（未安装）"
+
+msgid "PassWall: saved and restarted"
+msgstr "PassWall: 已保存并重启"
+
+msgid "PassWall: saved (not running, skip restart)"
+msgstr "PassWall: 已保存（未运行，跳过重启）"
+
+msgid "PassWall: saved (not installed)"
+msgstr "PassWall: 已保存（未安装）"
+
+msgid "Save error: "
+msgstr "保存错误: "
+
+msgid "Preferred DNS"
+msgstr "首选 DNS"
+
+msgid "Configure MosDNS Cloudflare IP optimization and PassWall DNS settings"
+msgstr "配置 MosDNS Cloudflare IP 优选和 PassWall DNS 设置"
+
+msgid "Collecting data..."
+msgstr "正在收集数据..."
+
+msgid "PassWall DNS"
+msgstr "PassWall DNS"
+
+msgid "Domain"
+msgstr "域名"
+
+msgid "DNS Server"
+msgstr "DNS 服务器"
+
+msgid "Tencent Public DNS (119.29.29.29)"
+msgstr "腾讯公共 DNS (119.29.29.29)"
+
+msgid "Tencent Public DNS (119.28.28.28)"
+msgstr "腾讯公共 DNS (119.28.28.28)"
+
+msgid "Aliyun Public DNS (223.5.5.5)"
+msgstr "阿里云公共 DNS (223.5.5.5)"
+
+msgid "Aliyun Public DNS (223.6.6.6)"
+msgstr "阿里云公共 DNS (223.6.6.6)"
+
+msgid "TrafficRoute Public DNS (180.184.1.1)"
+msgstr "火山引擎公共 DNS (180.184.1.1)"
+
+msgid "TrafficRoute Public DNS (180.184.2.2)"
+msgstr "火山引擎公共 DNS (180.184.2.2)"
+
+msgid "Xinfeng Public DNS (114.114.114.114)"
+msgstr "信风公共 DNS (114.114.114.114)"
+
+msgid "Xinfeng Public DNS (114.114.115.115)"
+msgstr "信风公共 DNS (114.114.115.115)"
+
+msgid "Baidu Public DNS (180.76.76.76)"
+msgstr "百度公共 DNS (180.76.76.76)"
+
+msgid "Google Public DNS (8.8.8.8)"
+msgstr "Google 公共 DNS (8.8.8.8)"
+
+msgid "CloudFlare Public DNS (1.1.1.1)"
+msgstr "CloudFlare 公共 DNS (1.1.1.1)"
+
+msgid "Resolve"
+msgstr "解析"
+
+msgid "Query and Apply"
+msgstr "查询并应用"
+
+msgid "MosDNS is not installed. This feature is unavailable."
+msgstr "MosDNS 未安装，此功能不可用。"
+
+msgid "Current Cloudflare IPs"
+msgstr "当前 Cloudflare IP"
+
+msgid "(none)"
+msgstr "（无）"
+
+msgid "Cloudflare Feature"
+msgstr "Cloudflare 功能"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Disabled (will be auto-enabled on resolve)"
+msgstr "已禁用（解析时将自动启用）"
+
+msgid "Every 30 minutes"
+msgstr "每 30 分钟"
+
+msgid "Every 1 hour"
+msgstr "每 1 小时"
+
+msgid "Every 6 hours"
+msgstr "每 6 小时"
+
+msgid "Every 12 hours"
+msgstr "每 12 小时"
+
+msgid "Every day at 4:00"
+msgstr "每天 4:00"
+
+msgid "Custom"
+msgstr "自定义"
+
+msgid "Scheduled Resolve"
+msgstr "定时解析"
+
+msgid "Cron service is not installed. Scheduled resolve is unavailable."
+msgstr "Cron 服务未安装，定时解析不可用。"
+
+msgid "Enable Scheduled Resolve"
+msgstr "启用定时解析"
+
+msgid "Automatically resolve domain on a schedule"
+msgstr "按计划自动解析域名"
+
+msgid "Schedule"
+msgstr "执行周期"
+
+msgid "Select a preset interval or choose Custom"
+msgstr "选择预设周期或自定义"
+
+msgid "Cron Expression"
+msgstr "Cron 表达式"
+
+msgid "5-field cron format: min hour day month weekday"
+msgstr "5 字段 cron 格式: 分 时 日 月 星期"
+
+msgid "Cron expression is required"
+msgstr "Cron 表达式不能为空"
+
+msgid "Invalid cron format (need 5 fields)"
+msgstr "无效的 cron 格式（需要 5 个字段）"
+
+msgid "PassWall is not installed. Settings below are read-only."
+msgstr "PassWall 未安装，以下设置为只读。"
+
+msgid "DNS Shunt"
+msgstr "DNS 分流"
+
+msgid "Filter Mode"
+msgstr "过滤模式"
+
+msgid "Remote DNS"
+msgstr "远程 DNS"
+
+msgid "Set to MosDNS listen address, e.g. 127.0.0.1#5335"
+msgstr "设置为 MosDNS 监听地址，如 127.0.0.1#5335"
+
+msgid "Remote DNS DoH"
+msgstr "远程 DNS DoH"
+
+msgid "DoH address for remote DNS resolution"
+msgstr "用于远程 DNS 解析的 DoH 地址"
+
+msgid "Disable if MosDNS handles DNS shunting"
+msgstr "如果 MosDNS 处理 DNS 分流则禁用"
+
+msgid "DNS Redirect"
+msgstr "DNS 重定向"
+
+msgid "Force redirect DNS for proxy devices"
+msgstr "强制重定向代理设备的 DNS"
+
+msgid "Enable MosDNS Feature"
+msgstr "启用 MosDNS 功能"
+
+msgid "Control the visibility of MosDNS settings and operation buttons."
+msgstr "控制 MosDNS 设置和操作按钮的显示。"
+
+msgid "Enable PassWall Feature"
+msgstr "启用 PassWall 功能"
+
+msgid "Control the visibility of PassWall DNS settings."
+msgstr "控制 PassWall DNS 设置的显示。"
+
+msgid "Auto-filled from MosDNS listen port. You can modify manually."
+msgstr "自动从 MosDNS 监听端口填充，您可以手动修改。"

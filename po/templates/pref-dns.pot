@@ -1,0 +1,221 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Not Installed"
+msgstr ""
+
+msgid "RUNNING"
+msgstr ""
+
+msgid "NOT RUNNING"
+msgstr ""
+
+msgid "Please enter a domain name"
+msgstr ""
+
+msgid "Please select a DNS server"
+msgstr ""
+
+msgid "Failed to parse result"
+msgstr ""
+
+msgid "Resolved %d IP(s): "
+msgstr ""
+
+msgid "MosDNS restarted"
+msgstr ""
+
+msgid "Saved (MosDNS not running)"
+msgstr ""
+
+msgid "Saved (MosDNS not installed)"
+msgstr ""
+
+msgid "DNS query timed out"
+msgstr ""
+
+msgid "No IP address found in DNS response"
+msgstr ""
+
+msgid "Resolve failed: "
+msgstr ""
+
+msgid "Execution error: "
+msgstr ""
+
+msgid "Configuration saved"
+msgstr ""
+
+msgid "MosDNS: saved and restarted"
+msgstr ""
+
+msgid "MosDNS: saved (not running, skip restart)"
+msgstr ""
+
+msgid "MosDNS: saved (not installed)"
+msgstr ""
+
+msgid "PassWall: saved and restarted"
+msgstr ""
+
+msgid "PassWall: saved (not running, skip restart)"
+msgstr ""
+
+msgid "PassWall: saved (not installed)"
+msgstr ""
+
+msgid "Save error: "
+msgstr ""
+
+msgid "Preferred DNS"
+msgstr ""
+
+msgid "Configure MosDNS Cloudflare IP optimization and PassWall DNS settings"
+msgstr ""
+
+msgid "Collecting data..."
+msgstr ""
+
+msgid "PassWall DNS"
+msgstr ""
+
+msgid "Domain"
+msgstr ""
+
+msgid "DNS Server"
+msgstr ""
+
+msgid "Tencent Public DNS (119.29.29.29)"
+msgstr ""
+
+msgid "Tencent Public DNS (119.28.28.28)"
+msgstr ""
+
+msgid "Aliyun Public DNS (223.5.5.5)"
+msgstr ""
+
+msgid "Aliyun Public DNS (223.6.6.6)"
+msgstr ""
+
+msgid "TrafficRoute Public DNS (180.184.1.1)"
+msgstr ""
+
+msgid "TrafficRoute Public DNS (180.184.2.2)"
+msgstr ""
+
+msgid "Xinfeng Public DNS (114.114.114.114)"
+msgstr ""
+
+msgid "Xinfeng Public DNS (114.114.115.115)"
+msgstr ""
+
+msgid "Baidu Public DNS (180.76.76.76)"
+msgstr ""
+
+msgid "Google Public DNS (8.8.8.8)"
+msgstr ""
+
+msgid "CloudFlare Public DNS (1.1.1.1)"
+msgstr ""
+
+msgid "Resolve"
+msgstr ""
+
+msgid "Query and Apply"
+msgstr ""
+
+msgid "MosDNS is not installed. This feature is unavailable."
+msgstr ""
+
+msgid "Current Cloudflare IPs"
+msgstr ""
+
+msgid "(none)"
+msgstr ""
+
+msgid "Cloudflare Feature"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Disabled (will be auto-enabled on resolve)"
+msgstr ""
+
+msgid "Every 30 minutes"
+msgstr ""
+
+msgid "Every 1 hour"
+msgstr ""
+
+msgid "Every 6 hours"
+msgstr ""
+
+msgid "Every 12 hours"
+msgstr ""
+
+msgid "Every day at 4:00"
+msgstr ""
+
+msgid "Custom"
+msgstr ""
+
+msgid "Scheduled Resolve"
+msgstr ""
+
+msgid "Cron service is not installed. Scheduled resolve is unavailable."
+msgstr ""
+
+msgid "Enable Scheduled Resolve"
+msgstr ""
+
+msgid "Automatically resolve domain on a schedule"
+msgstr ""
+
+msgid "Schedule"
+msgstr ""
+
+msgid "Select a preset interval or choose Custom"
+msgstr ""
+
+msgid "Cron Expression"
+msgstr ""
+
+msgid "5-field cron format: min hour day month weekday"
+msgstr ""
+
+msgid "Cron expression is required"
+msgstr ""
+
+msgid "Invalid cron format (need 5 fields)"
+msgstr ""
+
+msgid "PassWall is not installed. Settings below are read-only."
+msgstr ""
+
+msgid "DNS Shunt"
+msgstr ""
+
+msgid "Filter Mode"
+msgstr ""
+
+msgid "Remote DNS"
+msgstr ""
+
+msgid "Set to MosDNS listen address, e.g. 127.0.0.1#5335"
+msgstr ""
+
+msgid "Remote DNS DoH"
+msgstr ""
+
+msgid "DoH address for remote DNS resolution"
+msgstr ""
+
+msgid "Disable if MosDNS handles DNS shunting"
+msgstr ""
+
+msgid "DNS Redirect"
+msgstr ""
+
+msgid "Force redirect DNS for proxy devices"
+msgstr ""

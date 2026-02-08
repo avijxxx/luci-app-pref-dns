@@ -1,0 +1,20 @@
+{
+	"luci-app-pref-dns": {
+		"description": "Grant access for luci-app-pref-dns",
+		"read": {
+			"file": {
+				"/usr/share/pref_dns/pref_dns.sh": ["exec"],
+				"/etc/init.d/mosdns": ["exec", "stat"],
+				"/etc/init.d/passwall": ["exec", "stat"],
+				"/etc/init.d/cron": ["exec", "stat"]
+			},
+			"ubus": {
+				"file": ["stat", "exec"]
+			},
+			"uci": ["mosdns", "passwall", "pref_dns"]
+		},
+		"write": {
+			"uci": ["mosdns", "passwall", "pref_dns"]
+		}
+	}
+}
