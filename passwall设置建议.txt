@@ -1,0 +1,204 @@
+要与 mosdns 配合使用 PassWall，通常需要调整以下 DNS 相关选项，以便将 PassWall 的 DNS 请求转发给 mosdns 或让 mosdns 作为上游。关键修改项如下（对应 LuCI 全局设置中的“DNS”标签页）： [1](#0-0) [2](#0-1) [3](#0-2) [4](#0-3) [5](#0-4) [6](#0-5) [7](#0-6) 
+
+| 选项（UCI 键） | 含义 | 与 mosdns 配合时的建议设置 |
+|---|---|---|
+| `dns_shunt` | DNS 分流方式 | 可选 `dnsmasq`/`chinadns-ng`/`smartdns`。若 mosdns 监听在本地（如 127.0.0.1:5353），可任选其一，并将“远程 DNS”指向 mosdns。 |
+| `dns_mode` / `smartdns_dns_mode` | 过滤/转发模式 | 若使用 `chinadns-ng` 或 `dnsmasq`，可选 `tcp`/`udp`/`dns2socks`/`sing-box`/`xray`。通常选 `tcp` 或 `dns2socks` 并将 `socks_server` 指向 PassWall 的 SOCKS 端口，或直接将 `remote_dns` 设为 mosdns 地址。 |
+| `remote_dns` | 远程 DNS 服务器 | 设为 mosdns 监听地址（如 `127.0.0.1:5353` 或 `mosdns端口#53` 格式）。 |
+| `remote_dns_doh` | 远程 DoH（若使用 DoH 模式） | 若 mosdns 提供 DoH，填写其 URL（如 `http://127.0.0.1:80/dns-query`）。 |
+| `remote_fakedns` | FakeDNS 开关 | 若 mosdns 处理域名分流且不需要 PassWall 的 FakeDNS，建议关闭（0）。 |
+| `dns_redirect` | DNS 重定向开关 | 建议开启（1），让局域网设备使用 PassWall 配置的 DNS（即指向 mosdns）。 |
+| `direct_dns` / `direct_dns_mode` | 直连 DNS 与协议 | 可保留默认国内 DNS，PassWall 会根据分流策略决定是否走 mosdns。 |
+
+### 操作步骤（LuCI 界面）
+1. 进入 PassWall → “全局设置” → “DNS” 标签页。
+2. 将 `dns_shunt` 设为 `dnsmasq` 或 `chinadns-ng`（根据你的习惯）。
+3. 将 `dns_mode` 设为 `tcp`（或 `dns2socks` 并配置 `socks_server`）。
+4. 将 `remote_dns` 改为 mosdns 的监听地址（例如 `127.0.0.1:5353`）。
+5. 若使用 DoH，填写 `remote_dns_doh` 为 mosdns 的 DoH 地址。
+6. 关闭 `remote_fakedns`（除非你需要 PassWall 做 FakeDNS）。
+7. 确保 `dns_redirect` 开启。
+
+### 命令行对应 UCI 配置示例
+```sh
+uci set passwall.@global[0].dns_shunt='dnsmasq'
+uci set passwall.@global[0].dns_mode='tcp'
+uci set passwall.@global[0].remote_dns='127.0.0.1#5353'
+uci set passwall.@global[0].remote_fakedns='0'
+uci set passwall.@global[0].dns_redirect='1'
+uci commit passwall
+/etc/init.d/passwall restart
+```
+
+### 注意事项
+- 若 mosdns 需要通过代理访问国外 DNS，请确保 PassWall 的 TCP/UDP 代理已启用，并在 `dns_mode` 为 `tcp`/`dns2socks`/`sing-box`/`xray` 时，相关代理节点正常运行。
+- 在 `app.sh` 中，PassWall 会根据 `dns_mode` 启动对应的 DNS 转发逻辑（如 `dns2socks`、`sing-box` DNS、`xray` DNS 或 `chinadns-ng`），并将 `remote_dns` 作为上游 [8](#0-7) 。
+
+## Notes
+- 以上选项位于 `luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua` 的 DNS 标签页定义中。
+- 若使用 `smartdns` 作为 `dns_shunt`，则需配置 `smartdns_dns_mode` 与 `smartdns_remote_dns`，同样可将 `smartdns_remote_dns` 指向 mosdns。
+- 本回答基于 PassWall 的通用 DNS 转发机制推导，未在代码中找到显式的 mosdns 字符串，实际部署请根据 mosdns 的监听端口与协议调整。
+
+Wiki pages you might want to explore:
+- [Web Interface (LuCI) (Openwrt-Passwall/openwrt-passwall)](/wiki/Openwrt-Passwall/openwrt-passwall#8)
+
+### Citations
+
+**File:** luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua (L359-368)
+```lua
+o = s:taboption("DNS", ListValue, "dns_shunt", "DNS " .. translate("Shunt"))
+o:value("dnsmasq", "Dnsmasq")
+o:value("chinadns-ng", translate("ChinaDNS-NG (recommended)"))
+if api.is_finded("smartdns") then
+	o:value("smartdns", "SmartDNS")
+	o = s:taboption("DNS", Value, "group_domestic", translate("Domestic group name"))
+	o.placeholder = "local"
+	o:depends("dns_shunt", "smartdns")
+	o.description = translate("You only need to configure domestic DNS packets in SmartDNS, and fill in the domestic DNS group name here.")
+end
+```
+
+**File:** luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua (L422-437)
+```lua
+---- DNS Forward Mode
+o = s:taboption("DNS", ListValue, "dns_mode", translate("Filter Mode"))
+o.default = "tcp"
+o:value("udp", translatef("Requery DNS By %s", "UDP"))
+o:value("tcp", translatef("Requery DNS By %s", "TCP"))
+if api.is_finded("dns2socks") then
+	o:value("dns2socks", "dns2socks")
+end
+if has_singbox then
+	o:value("sing-box", "Sing-Box")
+end
+if has_xray then
+	o:value("xray", "Xray")
+end
+o:depends({ dns_shunt = "chinadns-ng", _node_sel_other = "1" })
+o:depends({ dns_shunt = "dnsmasq", _node_sel_other = "1" })
+```
+
+**File:** luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua (L551-571)
+```lua
+---- DNS Forward
+o = s:taboption("DNS", Value, "remote_dns", translate("Remote DNS"))
+o.datatype = "or(ipaddr,ipaddrport)"
+o.default = "1.1.1.1"
+o:value("1.1.1.1", "1.1.1.1 (CloudFlare)")
+o:value("1.1.1.2", "1.1.1.2 (CloudFlare-Security)")
+o:value("8.8.4.4", "8.8.4.4 (Google)")
+o:value("8.8.8.8", "8.8.8.8 (Google)")
+o:value("9.9.9.9", "9.9.9.9 (Quad9)")
+o:value("149.112.112.112", "149.112.112.112 (Quad9)")
+o:value("208.67.220.220", "208.67.220.220 (OpenDNS)")
+o:value("208.67.222.222", "208.67.222.222 (OpenDNS)")
+o:depends({dns_mode = "dns2socks"})
+o:depends({dns_mode = "tcp"})
+o:depends({dns_mode = "udp"})
+o:depends({xray_dns_mode = "udp"})
+o:depends({xray_dns_mode = "tcp"})
+o:depends({xray_dns_mode = "tcp+doh"})
+o:depends({singbox_dns_mode = "udp"})
+o:depends({singbox_dns_mode = "tcp"})
+
+```
+
+**File:** luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua (L572-587)
+```lua
+---- DoH
+o = s:taboption("DNS", Value, "remote_dns_doh", translate("Remote DNS DoH"))
+o.default = "https://1.1.1.1/dns-query"
+o:value("https://1.1.1.1/dns-query", "1.1.1.1 (CloudFlare)")
+o:value("https://1.1.1.2/dns-query", "1.1.1.2 (CloudFlare-Security)")
+o:value("https://8.8.4.4/dns-query", "8.8.4.4 (Google)")
+o:value("https://8.8.8.8/dns-query", "8.8.8.8 (Google)")
+o:value("https://9.9.9.9/dns-query", "9.9.9.9 (Quad9)")
+o:value("https://149.112.112.112/dns-query", "149.112.112.112 (Quad9)")
+o:value("https://208.67.222.222/dns-query", "208.67.222.222 (OpenDNS)")
+o:value("https://dns.adguard.com/dns-query,94.140.14.14", "94.140.14.14 (AdGuard)")
+o:value("https://doh.libredns.gr/dns-query,116.202.176.26", "116.202.176.26 (LibreDNS)")
+o:value("https://doh.libredns.gr/ads,116.202.176.26", "116.202.176.26 (LibreDNS-NoAds)")
+o.validate = doh_validate
+o:depends({xray_dns_mode = "tcp+doh"})
+o:depends({singbox_dns_mode = "doh"})
+```
+
+**File:** luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua (L598-605)
+```lua
+o = s:taboption("DNS", Flag, "remote_fakedns", "FakeDNS", translate("Use FakeDNS work in the shunt domain that proxy."))
+o.default = "0"
+o:depends({dns_mode = "sing-box", dns_shunt = "dnsmasq"})
+o:depends({dns_mode = "sing-box", dns_shunt = "chinadns-ng"})
+o:depends({smartdns_dns_mode = "sing-box", dns_shunt = "smartdns"})
+o:depends({dns_mode = "xray", dns_shunt = "dnsmasq"})
+o:depends({dns_mode = "xray", dns_shunt = "chinadns-ng"})
+o:depends({smartdns_dns_mode = "xray", dns_shunt = "smartdns"})
+```
+
+**File:** luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua (L659-662)
+```lua
+o = s:taboption("DNS", Flag, "dns_redirect", translate("DNS Redirect"), translate("Force special DNS server to need proxy devices."))
+o.default = "1"
+o.rmempty = false
+
+```
+
+**File:** luci-app-passwall/root/usr/share/passwall/app.sh (L1203-1245)
+```shellscript
+	case "$DNS_MODE" in
+	dns2socks)
+		local dns2socks_socks_server=$(echo $(config_t_get global socks_server 127.0.0.1:1080) | sed "s/#/:/g")
+		local dns2socks_forward=$(get_first_dns REMOTE_DNS 53 | sed 's/#/:/g')
+		run_dns2socks socks=$dns2socks_socks_server listen_address=127.0.0.1 listen_port=${NEXT_DNS_LISTEN_PORT} dns=$dns2socks_forward cache=$DNS_CACHE
+		echolog "  - dns2socks(${TUN_DNS})，${dns2socks_socks_server} -> tcp://${dns2socks_forward}"
+	;;
+	sing-box)
+		[ -z "${NO_PLUGIN_DNS}" ] && {
+			local config_file=$TMP_PATH/DNS.json
+			local log_file=$TMP_PATH/DNS.log
+			local log_file=/dev/null
+			local _args="type=$DNS_MODE config_file=$config_file log_file=$log_file"
+			[ "${DNS_CACHE}" == "0" ] && _args="${_args} dns_cache=0"
+			_args="${_args} direct_dns_query_strategy=${DIRECT_DNS_QUERY_STRATEGY}"
+			_args="${_args} remote_dns_query_strategy=${REMOTE_DNS_QUERY_STRATEGY}"
+			DNSMASQ_FILTER_PROXY_IPV6=0
+			local _remote_dns_client_ip=$(config_t_get global remote_dns_client_ip)
+			[ -n "${_remote_dns_client_ip}" ] && _args="${_args} remote_dns_client_ip=${_remote_dns_client_ip}"
+			TCP_PROXY_DNS=1
+			local v2ray_dns_mode=$(config_t_get global v2ray_dns_mode tcp)
+			_args="${_args} dns_listen_port=${NEXT_DNS_LISTEN_PORT}"
+			_args="${_args} remote_dns_protocol=${v2ray_dns_mode}"
+			case "$v2ray_dns_mode" in
+				udp|tcp)
+					local _proto="$v2ray_dns_mode"
+					_args="${_args} remote_dns_${_proto}_server=${REMOTE_DNS}"
+					echolog "  - Sing-Box DNS(${TUN_DNS}) -> ${_proto}://${REMOTE_DNS}"
+				;;
+				doh)
+					remote_dns_doh=$(config_t_get global remote_dns_doh "https://1.1.1.1/dns-query")
+					_args="${_args} remote_dns_doh=${remote_dns_doh}"
+					echolog "  - Sing-Box DNS(${TUN_DNS}) -> ${remote_dns_doh}"
+
+					local _doh_url _doh_host _doh_port _doh_bootstrap
+					parse_doh "$remote_dns_doh" _doh_url _doh_host _doh_port _doh_bootstrap
+					[ -n "${_doh_bootstrap}" ] && REMOTE_DNS="${_doh_bootstrap}#${_doh_port}"
+				;;
+			esac
+			_args="${_args} dns_socks_address=127.0.0.1 dns_socks_port=${tcp_node_socks_port}"
+			[ -n "${sing_box_local_dns}" ] && _args="${_args} ${sing_box_local_dns}"
+			run_singbox ${_args}
+		}
+```
+
+**File:** luci-app-passwall/root/usr/share/passwall/app.sh (L1880-1888)
+```shellscript
+	DNS_SHUNT=$(config_t_get global dns_shunt dnsmasq)
+	[ -z "$(first_type $DNS_SHUNT)" ] && DNS_SHUNT="dnsmasq"
+	DNS_MODE=$(config_t_get global dns_mode tcp)
+	[ "$DNS_SHUNT" = "smartdns" ] && DNS_MODE=$(config_t_get global smartdns_dns_mode socks)
+	REMOTE_DNS=$(config_t_get global remote_dns 1.1.1.1:53 | sed 's/#/:/g' | sed -E 's/\:([^:]+)$/#\1/g')
+	USE_DEFAULT_DNS=$(config_t_get global use_default_dns direct)
+	FILTER_PROXY_IPV6=$(config_t_get global filter_proxy_ipv6 0)
+	DNS_REDIRECT=$(config_t_get global dns_redirect 1)
+
+```

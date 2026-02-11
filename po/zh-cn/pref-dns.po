@@ -1,0 +1,113 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Preferred DNS"
+msgstr "首选 DNS"
+
+msgid "MosDNS Cloudflare IP optimization and PassWall DNS management"
+msgstr "MosDNS Cloudflare IP 优选与 PassWall DNS 管理"
+
+msgid "Preferred Domains"
+msgstr "优选域名"
+
+msgid "DNS Server"
+msgstr "DNS 服务器"
+
+msgid "Tencent DNS (119.29.29.29)"
+msgstr "腾讯 DNS (119.29.29.29)"
+
+msgid "Tencent DNS (119.28.28.28)"
+msgstr "腾讯 DNS (119.28.28.28)"
+
+msgid "Alibaba DNS (223.5.5.5)"
+msgstr "阿里 DNS (223.5.5.5)"
+
+msgid "Alibaba DNS (223.6.6.6)"
+msgstr "阿里 DNS (223.6.6.6)"
+
+msgid "Volcengine DNS (180.184.1.1)"
+msgstr "火山引擎 DNS (180.184.1.1)"
+
+msgid "Volcengine DNS (180.184.2.2)"
+msgstr "火山引擎 DNS (180.184.2.2)"
+
+msgid "114 DNS (114.114.114.114)"
+msgstr "114 DNS (114.114.114.114)"
+
+msgid "114 DNS (114.114.115.115)"
+msgstr "114 DNS (114.114.115.115)"
+
+msgid "Baidu DNS (180.76.76.76)"
+msgstr "百度 DNS (180.76.76.76)"
+
+msgid "Google DNS (8.8.8.8)"
+msgstr "Google DNS (8.8.8.8)"
+
+msgid "Cloudflare DNS (1.1.1.1)"
+msgstr "Cloudflare DNS (1.1.1.1)"
+
+msgid "Auto Update Interval"
+msgstr "自动更新间隔"
+
+msgid "Disabled"
+msgstr "禁用"
+
+msgid "Every 6 hours"
+msgstr "每 6 小时"
+
+msgid "Every 12 hours"
+msgstr "每 12 小时"
+
+msgid "Daily"
+msgstr "每天"
+
+msgid "Weekly"
+msgstr "每周"
+
+msgid "Update Now"
+msgstr "立即更新"
+
+msgid "Execute"
+msgstr "执行"
+
+msgid "Update completed"
+msgstr "更新完成"
+
+msgid "Update failed: "
+msgstr "更新失败: "
+
+msgid "Execution error: "
+msgstr "执行错误: "
+
+msgid "Current Cloudflare IPs"
+msgstr "当前 Cloudflare IP"
+
+msgid "No IPs configured"
+msgstr "暂无 IP"
+
+msgid "PassWall DNS"
+msgstr "PassWall DNS"
+
+msgid "Write MosDNS Port"
+msgstr "写入 MosDNS 端口"
+
+msgid "Write to PassWall"
+msgstr "写入 PassWall"
+
+msgid "Write completed"
+msgstr "写入完成"
+
+msgid "Write failed: "
+msgstr "写入失败: "
+
+msgid "Restore Default DNS"
+msgstr "恢复默认 DNS"
+
+msgid "Restore Default"
+msgstr "恢复默认"
+
+msgid "Restore completed"
+msgstr "恢复完成"
+
+msgid "Restore failed: "
+msgstr "恢复失败: "

@@ -1,0 +1,219 @@
+要在独立 LuCI 应用中实现“用户填写优选域名 → nslookup 指定 DNS 服务器 → 将解析 IP 写入 mosdns.config.cloudflare_ip”，你需要创建一个新应用，通过 UCI 操作写入 mosdns 的配置。以下是完整流程。
+内置DNS和自定义
+地址	协议/类型	中文显示名
+119.29.29.29	传统 DNS	腾讯公共 DNS（119.29.29.29）
+119.28.28.28	传统 DNS	腾讯公共 DNS（119.28.28.28）
+223.5.5.5	传统 DNS	阿里云公共 DNS（223.5.5.5）
+223.6.6.6	传统 DNS	阿里云公共 DNS（223.6.6.6）
+180.184.1.1	传统 DNS	火山引擎公共 DNS（180.184.1.1）
+180.184.2.2	传统 DNS	火山引擎公共 DNS（180.184.2.2）
+114.114.114.114	传统 DNS	信风公共 DNS（114.114.114.114）
+114.114.115.115	传统 DNS	信风公共 DNS（114.114.115.115）
+180.76.76.76	传统 DNS	百度公共 DNS（180.76.76.76）
+https://doh.pub/dns-query	DoH	腾讯公共 DNS（DNS over HTTPS）
+quic://dns.alidns.com	DoQ	阿里云公共 DNS（DNS over QUIC）
+https://dns.alidns.com/dns-query	DoH	阿里云公共 DNS（DNS over HTTPS）
+h3://dns.alidns.com/dns-query	DoH/3	阿里云公共 DNS（DNS over HTTPS/3）
+https://doh.360.cn/dns-query	DoH	360 安全 DNS（DNS over HTTPS
+### 流程概览
+1. 前端提供域名和 DNS 服务器输入框，以及执行按钮
+2. 点击按钮调用后端脚本，传递参数
+3. 后端脚本执行 nslookup 解析 IP   注意openwrt没有timeout命令
+4. 使用 `uci add_list mosdns.config.cloudflare_ip="$ip"` 添加 IP
+5. 提交 UCI 并重启 mosdns 生效
+6. 显示luci-app-mosdns当前的cloudflaer ip （ updateIpDisplay: function() {                                                                                                                                                                                      // 1. 先卸载旧的UCI缓存
+      uci.unload('mosdns');
+
+      // 2. 重新加载最新配置
+      return uci.load('mosdns').then(function() {
+
+          // 3. 获取DOM元素
+          var ipEl = document.getElementById('pref_dns_current_ips');
+
+          // 4. 读取最新IP
+          var ips = uci.get('mosdns', 'config', 'cloudflare_ip');
+
+          // 5. 清空旧内容，渲染新IP
+          while (ipEl.firstChild) ipEl.removeChild(ipEl.firstChild);
+          ips.forEach(function(ip) {
+              ipEl.appendChild(document.createTextNode(ip));
+          });
+      });
+  }
+
+  核心点：
+  1. uci.unload() - 清除前端缓存
+  2. uci.load() - 从后端重新读取
+  3. 直接操作 DOM 更新显示）
+### 1. 前端视图：basic.js
+```javascript
+'use strict';
+'require form';
+'require fs';
+'require ui';
+'require view';
+
+return view.extend({
+    render: function() {
+        var m, s, o;
+        m = new form.Map('pref_dns', _('优选域名'),
+            _('输入域名和 DNS 服务器，解析 IP 并写入 MosDNS Cloudflare IP 列表'));
+
+        s = m.section(form.TypedSection);
+        s.anonymous = true;
+
+        o = s.option(form.Value, 'domain', _('域名'));
+        o.rmempty = false;
+
+        o = s.option(form.Value, 'dns_server', _('DNS 服务器'));
+        o.default = '8.8.8.8';
+        o.rmempty = false;
+
+        o = s.option(form.Button, '_exec', _('执行'));
+        o.inputtitle = _('查询并写入');
+        o.onclick = function() {
+            var domain = this.section.getOption('domain').formvalue();
+            var dns = this.section.getOption('dns_server').formvalue();
+            return fs.exec('/usr/share/pref_dns/pref_dns.sh', [domain, dns])
+                .then(function(res) {
+                    if (res.code === 0) {
+                        ui.addNotification(null, E('p', _('已更新 Cloudflare IP 列表')), 'info');
+                    } else {
+                        ui.addNotification(null, E('p', _('执行失败: ') + res.stderr), 'error');
+                    }
+                });
+        };
+
+        return m.render();
+    }
+});
+```
+
+### 2. 后端脚本：pref_dns.sh
+```sh
+#!/bin/sh
+DOMAIN=$1
+DNS_SERVER=$2
+
+if [ -z "$DOMAIN" ] || [ -z "$DNS_SERVER" ]; then
+    echo "Usage: $0 <domain> <dns_server>"
+    exit 1
+fi
+
+# 解析 IP 并添加到 UCI 列表
+nslookup "$DOMAIN" "$DNS_SERVER" | awk '/^Address: / {print $2}' | while read -r ip; do
+    uci add_list mosdns.config.cloudflare_ip="$ip"
+done
+uci commit mosdns
+/etc/init.d/mosdns restart
+```
+
+### 3. ACL 权限配置
+创建 `root/usr/share/rpcd/acl.d/luci-app-pref-dns.json`：
+```json
+{
+    "luci-app-pref-dns": {
+        "description": "Grant access for pref-dns",
+        "read": {
+            "file": {
+                "/usr/share/pref_dns/pref_dns.sh": [ "exec" ]
+            }
+        },
+        "write": {
+            "uci": [ "mosdns" ]
+        }
+    }
+}
+```
+
+### 4. 菜单注册
+创建 `root/usr/share/luci/menu.d/luci-app-pref-dns.json`：
+```json
+{
+    "admin/services/pref_dns": {
+        "title": "优选域名",
+        "order": 90,
+        "action": {
+            "type": "view",
+            "path": "pref_dns/basic"
+        },
+        "depends": {
+            "acl": [ "luci-app-pref-dns" ]
+        }
+    }
+}
+```
+
+### 5. Makefile
+```makefile
+include $(TOPDIR)/rules.mk
+
+LUCI_TITLE:=优选域名 - 写入 MosDNS Cloudflare IP
+LUCI_DEPENDS:=+luci +mosdns
+LUCI_PKGARCH:=all
+
+PKG_NAME:=luci-app-pref-dns
+PKG_VERSION:=1.0
+PKG_RELEASE:=1
+
+include $(INCLUDE_DIR)/package.mk
+
+define Package/$(PKG_NAME)/postinst
+#!/bin/sh
+chmod +x "$${IPKG_INSTROOT}/usr/share/pref_dns/pref_dns.sh"
+endef
+
+$(eval $(call BuildPackage,$(PKG_NAME)))
+```
+
+### 关键说明
+- `cloudflare_ip` 是 mosdns 的 UCI 列表选项，用于存储自定义 IP [1](#3-0) 。
+- 在 mosdns 配置生成时，这些 IP 会被用于 `black_hole` 动作，替换匹配到的 Cloudflare IP [2](#3-1) 。
+- ACL 需要包含对 `mosdns` UCI 的写权限，参考 luci-app-mosdns 的 ACL 配置 [3](#3-2) 。
+
+## Notes
+- 独立应用通过 ACL 控制权限，避免直接集成到 luci-app-mosdns。
+- 脚本需确保可执行权限（在 postinst 中设置）。
+- 如需去重，可在添加前检查 IP 是否已存在：`uci show mosdns.@config[0].cloudflare_ip | grep -q "$ip"`。
+- 错误处理建议在脚本中增加 nslookup 失败检测。
+
+Wiki pages you might want to explore:
+- [Overview (sbwml/luci-app-mosdns)](/wiki/sbwml/luci-app-mosdns#1)
+
+### Citations
+
+**File:** luci-app-mosdns/htdocs/luci-static/resources/view/mosdns/basic.js (L354-365)
+```javascript
+		/* cloudflare */
+		o = s.taboption('cloudflare', form.Flag, 'cloudflare', _('Enabled'),
+			_('Match the parsing result with the Cloudflare IP ranges, and when there is a successful match, \
+				use the \'Custom IP\' as the parsing result (experimental feature)'));
+		o.rmempty = false;
+		o.default = false;
+		o.depends('configfile', '/var/etc/mosdns.json');
+
+		o = s.taboption('cloudflare', form.DynamicList, 'cloudflare_ip', _('Custom IP'));
+		o.datatype = 'ipaddr';
+		o.depends('configfile', '/var/etc/mosdns.json');
+
+```
+
+**File:** luci-app-mosdns/root/etc/init.d/mosdns (L400-410)
+```text
+	[ "$cloudflare" -eq 1 ] && {
+		json_add_object
+		json_add_array "matches"
+		json_add_string "" "!qname \$whitelist"
+		json_add_string "" "!qname \$greylist"
+		json_add_string "" "!qname \$stream_media"
+		json_add_string "" "resp_ip \$cloudflare_cidr"
+		json_close_array
+		json_add_string "exec" "black_hole $cloudflare_ip"
+		json_close_object
+	}
+```
+
+**File:** luci-app-mosdns/root/usr/share/rpcd/acl.d/luci-app-mosdns.json (L42-42)
+```json
+			"uci": [ "mosdns" ]
+```

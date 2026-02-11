@@ -1,0 +1,10 @@
+#!/bin/sh
+
+uci -q batch <<-EOF >/dev/null
+    set pref_dns.config=pref_dns
+    set pref_dns.config.dns_server='223.5.5.5'
+    set pref_dns.config.cron_interval='disabled'
+    commit pref_dns
+EOF
+
+exit 0

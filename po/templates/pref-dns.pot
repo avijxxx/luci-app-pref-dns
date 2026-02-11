@@ -1,0 +1,113 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Preferred DNS"
+msgstr ""
+
+msgid "MosDNS Cloudflare IP optimization and PassWall DNS management"
+msgstr ""
+
+msgid "Preferred Domains"
+msgstr ""
+
+msgid "DNS Server"
+msgstr ""
+
+msgid "Tencent DNS (119.29.29.29)"
+msgstr ""
+
+msgid "Tencent DNS (119.28.28.28)"
+msgstr ""
+
+msgid "Alibaba DNS (223.5.5.5)"
+msgstr ""
+
+msgid "Alibaba DNS (223.6.6.6)"
+msgstr ""
+
+msgid "Volcengine DNS (180.184.1.1)"
+msgstr ""
+
+msgid "Volcengine DNS (180.184.2.2)"
+msgstr ""
+
+msgid "114 DNS (114.114.114.114)"
+msgstr ""
+
+msgid "114 DNS (114.114.115.115)"
+msgstr ""
+
+msgid "Baidu DNS (180.76.76.76)"
+msgstr ""
+
+msgid "Google DNS (8.8.8.8)"
+msgstr ""
+
+msgid "Cloudflare DNS (1.1.1.1)"
+msgstr ""
+
+msgid "Auto Update Interval"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Every 6 hours"
+msgstr ""
+
+msgid "Every 12 hours"
+msgstr ""
+
+msgid "Daily"
+msgstr ""
+
+msgid "Weekly"
+msgstr ""
+
+msgid "Update Now"
+msgstr ""
+
+msgid "Execute"
+msgstr ""
+
+msgid "Update completed"
+msgstr ""
+
+msgid "Update failed: "
+msgstr ""
+
+msgid "Execution error: "
+msgstr ""
+
+msgid "Current Cloudflare IPs"
+msgstr ""
+
+msgid "No IPs configured"
+msgstr ""
+
+msgid "PassWall DNS"
+msgstr ""
+
+msgid "Write MosDNS Port"
+msgstr ""
+
+msgid "Write to PassWall"
+msgstr ""
+
+msgid "Write completed"
+msgstr ""
+
+msgid "Write failed: "
+msgstr ""
+
+msgid "Restore Default DNS"
+msgstr ""
+
+msgid "Restore Default"
+msgstr ""
+
+msgid "Restore completed"
+msgstr ""
+
+msgid "Restore failed: "
+msgstr ""

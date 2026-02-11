@@ -1,0 +1,15 @@
+{
+    "luci-app-pref-dns": {
+        "description": "Grant access to Preferred DNS",
+        "read": {
+            "file": {
+                "/usr/share/pref_dns/pref_dns.sh": ["exec"],
+                "/usr/share/pref_dns/passwall.sh": ["exec"]
+            },
+            "uci": ["pref_dns", "mosdns", "passwall"]
+        },
+        "write": {
+            "uci": ["pref_dns", "mosdns", "passwall"]
+        }
+    }
+}

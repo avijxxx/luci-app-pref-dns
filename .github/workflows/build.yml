@@ -1,0 +1,171 @@
+name: "Auto compile with openwrt sdk"
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Makefile'
+      - 'root/**'
+      - 'htdocs/**'
+      - 'po/**'
+      - '.github/workflows/build.yml'
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
+env:
+  TZ: Asia/Shanghai
+  REPO: ${{ github.repository }}
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  job_check:
+    name: Check Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check_version.outputs.latest_version }}
+      has_update: ${{ steps.check_version.outputs.has_update }}
+      prerelease: ${{ steps.check_version.outputs.prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+
+      - name: Check version
+        id: check_version
+        env:
+          url_tags: https://api.github.com/repos/${{ env.REPO }}/releases/latest
+        run: |
+          latest_version=$(awk -F ':=' '/^PKG_VERSION:=|^PKG_RELEASE:=/ {print $2}' Makefile | sed ':a;N;s/\$(PKG_VERSION)-//;s/\n$//;s/\n/-/;ba')
+          echo "latest_version=${latest_version}" >> $GITHUB_OUTPUT
+
+          prerelease=$([ "${{ github.ref_name }}" == "main" ] && echo false || echo true)
+          echo "prerelease=${prerelease}" >> $GITHUB_OUTPUT
+
+          remote_latest_version=$(wget -qO- -t1 -T2 ${{ env.url_tags }} | jq -r '.tag_name')
+          if [ -z "$remote_latest_version" ] || [ "$remote_latest_version" = "null" ]; then
+            echo "has_update=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if [ "$latest_version" = "$remote_latest_version" ]; then
+            echo "has_update=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_update=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Prepare release
+        if: steps.check_version.outputs.has_update == 'true'
+        run: |
+          echo "## luci-app-pref-dns ${{ steps.check_version.outputs.latest_version }}" > release.txt
+          echo "" >> release.txt
+          echo "### Install" >> release.txt
+          echo '```' >> release.txt
+          echo 'curl -sL https://raw.githubusercontent.com/${{ env.REPO }}/main/install.sh | sh' >> release.txt
+          echo '```' >> release.txt
+
+      - name: Generate new tag & release
+        if: steps.check_version.outputs.has_update == 'true'
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.check_version.outputs.latest_version }}
+          target_commitish: ${{ github.ref_name }}
+          prerelease: ${{ steps.check_version.outputs.prerelease }}
+          body_path: release.txt
+
+  job_build:
+    name: Build [${{ matrix.ver }}]
+    needs: job_check
+    if: needs.job_check.outputs.has_update == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - url_sdk: https://archive.openwrt.org/releases/21.02.7/targets/x86/64/openwrt-sdk-21.02.7-x86-64_gcc-8.4.0_musl.Linux-x86_64.tar.xz
+            ver: "22.03-"
+
+          - url_sdk: https://downloads.openwrt.org/releases/24.10.5/targets/x86/64/openwrt-sdk-24.10.5-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+            ver: "23.05-24.10"
+
+          - url_sdk: https://downloads.openwrt.org/snapshots/targets/x86/64/openwrt-sdk-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst
+            ver: "25.12+"
+    steps:
+      - name: Install packages
+        run: |
+          sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /usr/local/lib/android
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install build-essential ccache gawk gettext git libncurses-dev \
+            libssl-dev python3 rsync unzip wget zlib1g-dev zstd
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+
+      - name: Initialization environment
+        run: |
+          wget ${{ matrix.url_sdk }}
+          file_name=$(echo ${{ matrix.url_sdk }} | awk -F/ '{print $NF}')
+          mkdir sdk
+          if [[ $file_name == *.tar.xz ]]; then
+            tar -xJf $file_name -C ./sdk --strip-components=1
+          elif [[ $file_name == *.tar.zst ]]; then
+            tar --zstd -x -f $file_name -C ./sdk --strip-components=1
+          else
+            echo "Unsupported file format: $file_name"
+            exit 1
+          fi
+          cd sdk
+
+          sed -i \
+              -e 's|git\.openwrt\.org/feed|github.com/openwrt|g' \
+              -e 's|git\.openwrt\.org/project|github.com/openwrt|g' \
+              -e 's|git\.openwrt\.org/openwrt|github.com/openwrt|g' \
+              "feeds.conf.default"
+
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+          git clone --depth 1 -b ${{ github.ref_name }} https://github.com/${{ env.REPO }}.git package/luci-app-pref-dns
+
+      - name: Compile
+        id: compile
+        run: |
+          cd sdk
+          # Clear entire tmp directory to force full package rescan
+          rm -rf tmp/
+
+          # Scan package directory to register new package
+          make package/luci-app-pref-dns/download V=s || true
+
+          echo "CONFIG_ALL_NONSHARED=n" > .config
+          echo "CONFIG_ALL_KMODS=n" >> .config
+          echo "CONFIG_ALL=n" >> .config
+          echo "CONFIG_AUTOREMOVE=n" >> .config
+          echo "CONFIG_LUCI_LANG_zh_Hans=y" >> .config
+          echo "CONFIG_PACKAGE_luci-app-pref-dns=m" >> .config
+          echo "CONFIG_PACKAGE_luci-i18n-pref-dns-zh-cn=m" >> .config
+          make defconfig
+          make package/luci-app-pref-dns/compile -j$(nproc) V=s
+          mkdir upload
+          find bin/packages/ -name "luci-*pref-dns*" -exec cp {} upload/ \;
+          cd upload
+          for i in $(ls); do mv $i ${{ matrix.ver }}_$i; done
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        if: steps.compile.outputs.status == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.job_check.outputs.version }}
+          files: ${{ env.FIRMWARE }}/*
